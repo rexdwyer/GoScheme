@@ -1,0 +1,7 @@
+(letrec ((fib (lambda(n) (fastfib n 1 0)))
+         (fastfib (lambda (k n1 n2) 
+                    (if (== k 0) n2
+		        (prog2 (print (list k n1 n2))
+			       (fastfib (- k 1) (+ n1 n2) n1))))))
+    (fib 30))
+

@@ -1,0 +1,46 @@
+GoScheme
+
+The purpose of this project is simply to show that I can do something
+of substance in Go.  The "something of substance" is to implement an
+interpreter for a simple purely applicative subset of the Scheme
+programming language.
+
+The program reads a single S-expression from standard input, evaluates
+it, and prints the result on standard output.
+
+Since the dialect is purely applicative, the order of evaluation of
+the arguments of a function doesn't matter.  That means they can be
+evaluated in parallel.  To make the point, running the program with
+the -p option causes the arguments of every function call to be
+evaluated in parallel using goroutines.  This also makes the point
+that I understand something about goroutines and channels.  It's
+actually more of a loss than a gain for performance since a very large
+number of goroutines are created for a deeply recursive function call.
+
+There are four sample Scheme programs:
+flatten.txt  flattens a nested list.
+slowfib.txt  computes the 30th Fibonacci number in a slow way.
+fastfib.txt  computes the 30th Fibonacci number in a fast way.
+twice.txt    is a contrived example illustrating that the interpreter 
+             correcly handles upward and downward funargs. It should appeal
+             to Python programmers because it involves spam and eggs.
+
+If this program amuses you, you could consider a couple of enhancement.
+1) Make and and or short-circuiting.
+2) Modify the program so that it can read dotted pairs like (A.B) or (A B.C)
+It will currently print dotted pairs but not read them.
+3) Implement cond.  cond provides a syntax that replaces chains of nested ifs.  
+4) Implement let.  let provides a way to define variables.
+
+More information about Scheme can be found here:
+http://groups.csail.mit.edu/mac/projects/scheme/ 
+(In particular cond and let are defined in the Revised Report on the
+Algorithmic Language Scheme.)
+
+This program was my first Go program and required roughly one day's
+work.  You are free to use it in any way you wish that is consistent
+with academic integrity.  That's a fancy way of saying that you won't
+turn it in for credit in a class.
+
+Rex Dwyer
+12 June 2015

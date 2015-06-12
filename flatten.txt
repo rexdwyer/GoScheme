@@ -1,0 +1,10 @@
+
+(letrec ((append (lambda(l1 l2) 
+                    (if (null l1) l2 (cons (car l1) (append (cdr l1) l2)))))
+         (flatten (lambda(s)
+              (if (atom s) s 
+                  (if (atom(car s)) (cons (car s) (flatten (cdr s)))
+                      (append (flatten (car s))(flatten(cdr s))))))))
+   (flatten (quote ((((twice twice)
+      (twice (conser (quote spam)))) 
+     (quote (eggs and spam)))))))

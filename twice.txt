@@ -1,0 +1,5 @@
+(letrec ((twice (lambda(f) (lambda(n) (f (f n)))))
+         (conser (lambda(s) (lambda(l) (cons s l)))))
+    (((twice twice)
+      (twice (conser (quote spam)))) 
+     (quote (eggs and spam))))
