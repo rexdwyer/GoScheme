@@ -178,7 +178,8 @@ func lookup(atom Sexpr, env Sexpr) Sexpr {
 // Evaluate an expression in the given environment.
 // There are various special forms, and function application.
 func eval(exp Sexpr, env Sexpr) Sexpr {
-	// Integers evaluate to themselves.
+     for {
+     	// Integers evaluate to themselves.
 	if atom(exp) && isInteger(*exp.name) {
 		return exp
 	}
@@ -198,15 +199,17 @@ func eval(exp Sexpr, env Sexpr) Sexpr {
 	// for prog2, we evaluate the two arguments in order and return the second.
 	if atom(car(exp)) && *car(exp).name == "prog2" {
 		eval(second(exp), env)
-		return eval(third(exp), env)
+		exp = third(exp)
+		continue
 	}
 	// for if, we evaluate the first argument then choose either the 2nd or 3rd.
 	if atom(car(exp)) && *car(exp).name == "if" {
-		test := eval(second(exp), env)
-		if atom(test) && *test.name == "nil" {
-			return eval(fourth(exp), env)
-		}
-		return eval(third(exp), env)
+		if null(eval(second(exp), env)) {
+			exp = fourth(exp)
+		} else {
+		        exp = third(exp)
+                }
+                continue
 	}
 	// lambda expressions evaluate to closures, which include the environment
 	// in which the function is defined.
@@ -222,10 +225,11 @@ func eval(exp Sexpr, env Sexpr) Sexpr {
 		// Each vertebra holds two ribs:
 		// One for function names and one for closures.
 		// The ribs get filled in later.
-		vertebra := cons(nyl(), nyl())
+		nyll := nyl()
+		vertebra := cons(nyll,nyll)
 		newenv := cons(vertebra, env)
-		names := nyl()
-		vals := nyl()
+		names := nyll;
+		vals := nyll;
 		// Now step through the function definitions and build up a
 		// list of names and a list of closures.
 		for pairs := second(exp); !null(pairs); pairs = cdr(pairs) {
@@ -239,11 +243,29 @@ func eval(exp Sexpr, env Sexpr) Sexpr {
 		vertebra.car = names
 		vertebra.cdr = vals
 		// Last evaluate the body of the letrec in the new extended environment.
-		return eval(third(exp), newenv)
+                exp,env = third(exp), newenv
+		continue
 	}
 	// It's not an atom and none of the special forms apply, so it's a function
 	// application.  Evaluate every element of the list, then apply function.
-	return apply(evlis(exp, env))
+	lis := evlis(exp, env)
+	fun := car(lis)
+	args := cdr(lis)
+	if atom(fun) {
+		return applyPrimitive(*fun.name, args)
+	}
+	if *car(fun).name == "*CLOSURE*" {
+		lambda := second(fun)
+		formals := second(lambda)
+		body := third(lambda)
+		env = third(fun)
+		vetebra := cons(formals, args)
+		newenv := cons(vetebra, env)
+		exp,env = body, newenv
+		continue
+	}
+	panic(errors.New("Illegal function"))
+    }
 }
 
 // Evaluates a list of expressions in the given environment.
@@ -305,23 +327,6 @@ func collectFromGoList(cell *goCell) Sexpr {
 // If the function is not a primitive, then we must retrieve the environment
 // from the closure and extend it with ribs for the formal parameters and
 // actual arguments.
-func apply(exp Sexpr) Sexpr {
-	fun := car(exp)
-	args := cdr(exp)
-	if atom(fun) {
-		return applyPrimitive(*fun.name, args)
-	}
-	if *car(fun).name == "*CLOSURE*" {
-		lambda := second(fun)
-		formals := second(lambda)
-		body := third(lambda)
-		env := third(fun)
-		vetebra := cons(formals, args)
-		newenv := cons(vetebra, env)
-		return eval(body, newenv)
-	}
-	panic(errors.New("Illegal function"))
-}
 
 // Apply primitive operations.  They would have evaluated to themselves.
 func applyPrimitive(name string, args Sexpr) Sexpr {

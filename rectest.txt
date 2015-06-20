@@ -1,0 +1,2 @@
+(letrec ((test (lambda (x y) (if (== x 0) y (test (- x 1) (+ y 1))))))
+	(test 1000000 0))
